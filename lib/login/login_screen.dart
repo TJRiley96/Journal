@@ -11,11 +11,13 @@
 
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hash/hash.dart';
+import 'package:journal/auth/auth_fb.dart';
 import 'package:journal/com/hash_pwd.dart';
-
+import 'package:journal/globals.dart' as globals;
 import '../color_palette.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,8 +28,6 @@ class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
-
-
 
 Widget buildForgotPassBtn() {
   return Container(
@@ -43,8 +43,6 @@ Widget buildForgotPassBtn() {
   );
 }
 
-
-
 Widget buildSkipBtn(BuildContext context) {
   return Container(
     padding: const EdgeInsets.symmetric(vertical: 25),
@@ -55,13 +53,11 @@ Widget buildSkipBtn(BuildContext context) {
           padding: const EdgeInsets.all(15),
           elevation: 5,
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
       child: Text(
         "Skip",
         style: TextStyle(
-            color: textMain,
-            fontSize: 18,
-            fontWeight: FontWeight.bold),
+            color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
       ),
       onPressed: () {
         Navigator.of(context).pushNamed('/post/create');
@@ -74,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isRememberMe = false;
   String userEmail = '';
   int userPass = 0;
+
   Widget buildEmail() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
           height: 60,
           child: TextField(
             keyboardType: TextInputType.emailAddress,
-            onChanged: (value){
+            onChanged: (value) {
               userEmail = value;
             },
             style: const TextStyle(
@@ -124,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ],
     );
   }
+
   Widget buildPassword() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: TextField(
             obscuringCharacter: '#',
             obscureText: true,
-            onChanged: (value){
+            onChanged: (value) {
               userPass = hashPassword(value);
             },
             keyboardType: TextInputType.visiblePassword,
@@ -176,6 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ],
     );
   }
+
   Widget buildRememberCheck() {
     return Container(
       height: 20,
@@ -205,6 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
   Widget buildLoginBtn() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25),
@@ -214,17 +214,36 @@ class _LoginScreenState extends State<LoginScreen> {
             backgroundColor: Colors.white,
             padding: const EdgeInsets.all(15),
             elevation: 5,
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15))),
         child: Text(
           "Login",
           style: TextStyle(
-              color: textMain,
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
+              color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         // TODO: Add login functionality
-        onPressed: () => log("Login Pressed\nEmail: $userEmail\nPassword: $userPass"),
+        onPressed: () async {
+          log("Login Pressed\nEmail: $userEmail\nPassword: $userPass");
+          try {
+            final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                email: userEmail,
+                password: userPass.toString()
+            );
+            log("$credential");
+            userCredential = credential;
+            globals.user = credential;
+            log('User Credentials Log - ${globals.user.credential}');
+            log('User user Log - ${globals.user.user}');
+            log('User Additional User Info Log - ${globals.user.additionalUserInfo}');
+            Navigator.of(context).pushNamed('/post/create');
+          } on FirebaseAuthException catch (e) {
+            if (e.code == 'user-not-found') {
+              log('No user found for that email.');
+            } else if (e.code == 'wrong-password') {
+              log('Wrong password provided for that user.');
+            }
+          }
+        },
       ),
     );
   }
@@ -233,55 +252,55 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: SystemUiOverlayStyle.light,
-          child: GestureDetector(
-            child: Stack(
-              children: <Widget>[
-                Container(
-                  height: double.infinity,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: backgroundMain),
-                  ),
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 25,
-                      vertical: 120,
+      value: SystemUiOverlayStyle.light,
+      child: GestureDetector(
+        child: Stack(
+          children: <Widget>[
+            Container(
+              height: double.infinity,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: backgroundMain),
+              ),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 120,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Text(
+                      "Sign In",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text(
-                          "Sign In",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 50,
-                        ),
-                        buildEmail(),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        buildPassword(),
-                        buildForgotPassBtn(),
-                        buildRememberCheck(),
-                        buildLoginBtn(),
-                        buildSkipBtn(context)
-                      ],
+                    const SizedBox(
+                      height: 50,
                     ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ));
+                    buildEmail(),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    buildPassword(),
+                    buildForgotPassBtn(),
+                    buildRememberCheck(),
+                    buildLoginBtn(),
+                    buildSkipBtn(context)
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    ));
   }
 }

@@ -4,6 +4,9 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 
+dynamic userCredential = Null;
+
+
 class AuthMinder{
   StreamSubscription<User?> login(){
     return FirebaseAuth.instance

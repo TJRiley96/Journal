@@ -9,13 +9,16 @@
 // Status: Development
 //
 
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:journal/auth/auth_fb.dart';
+import 'package:journal/com/entry_object.dart';
 import 'dart:io';
 import '../color_palette.dart';
-
+import 'package:journal/globals.dart' as globals;
 class CreatePostScreen extends StatefulWidget {
   /// Screen to create journal entry for posting.
   /// User enters entry and click uploads to firebase database.
@@ -31,12 +34,29 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   var _today;
   var _dateOutput;
 
+  Map<String, dynamic> _data() =>
+      {'entry': entry, 'date': _dateOutput, 'modified': DateTime.now()};
 
   @override
   Widget build(BuildContext context) {
     _today = DateFormat.yMMMMd().format(_date);
     _dateOutput = DateFormat("yMMd").format(_date);
     return _buildContent(context);
+  }
+
+  Future post() async {
+    Entry userEntry = Entry(
+        dateID: _dateOutput,
+        dateLong: _today,
+        entry: entry,
+        dateModified: DateTime.now());
+    final send = FirebaseFirestore.instance
+        .collection('Users')
+        .doc(globals.user.user?.uid)
+        .collection('posts')
+        .doc(userEntry.dateID);
+
+    await send.set(userEntry.toJson());
   }
 
   Widget buildPostWriter() {
@@ -90,20 +110,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
     );
   }
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _date,
       firstDate: DateTime(2012),
       lastDate: DateTime.now(),
-
     );
 
-    if(picked != null && picked != _date) {
+    if (picked != null && picked != _date) {
       print('Date selected: ${_date.toString()}');
       print(_today);
       print(_dateOutput);
-      setState((){
+      setState(() {
         _date = picked;
       });
     }
@@ -134,14 +154,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 ElevatedButton(
-                                    onPressed: () => print(entry),
+                                    onPressed: () {
+                                      print(entry);
+                                      post();
+                                    },
                                     child: const Text("Post"))
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                ElevatedButton( onPressed: ()=> _selectDate(context), child: Text("$_today"),)
+                                ElevatedButton(
+                                  onPressed: () => _selectDate(context),
+                                  child: Text("$_today"),
+                                )
                               ],
                             ),
                             Column(

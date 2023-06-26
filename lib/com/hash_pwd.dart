@@ -11,6 +11,6 @@ int hashPassword(String p){
   for( int u in e){
     add = add + u;
   }
-  h = add % 255;
+  h = (add % 255) * 12345;
   return h;
 }
