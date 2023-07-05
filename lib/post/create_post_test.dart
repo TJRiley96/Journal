@@ -22,83 +22,51 @@ import 'dart:io';
 import '../color_palette.dart';
 import 'package:journal/globals.dart' as globals;
 
-class CreatePostScreen extends StatefulWidget {
+class CreatePostScreenTest extends StatefulWidget {
   /// Screen to create journal entry for posting.
   /// User enters entry and click uploads to firebase database.
-  const CreatePostScreen({super.key});
+  const CreatePostScreenTest({super.key});
 
   @override
-  State<CreatePostScreen> createState() => _CreatePostScreenState();
+  State<CreatePostScreenTest> createState() => _CreatePostScreenStateTest();
 }
 
-class _CreatePostScreenState extends State<CreatePostScreen> {
+class _CreatePostScreenStateTest extends State<CreatePostScreenTest> {
   String entry = "";
   DateTime _date = DateTime.now();
-  bool dataCheck = false;
   var _today;
-  String _dateOutput = '';
-  final userID = FirebaseAuth.instance.currentUser?.uid;
+  var _dateOutput;
   final collectionRef = FirebaseFirestore.instance
       .collection('User')
       .doc(globals.user.user?.uid)
       .collection('posts');
   final textController = TextEditingController();
+  late Entry userEntry = Entry(
+      dateID: _dateOutput,
+      dateLong: _today,
+      entry: entry,
+      dateModified: DateTime.now());
 
-  //
-  // Future<String> getEntryTest() async {
-  //   log('=============Beginning=============');
-  //   if(await checkIfDocExists(_dateOutput)){
-  //   var getEnt = await collectionRef.doc(_dateOutput).get();
-  //   log('GetEntryTest: $getEnt');
-  //   var data =getEnt.data();
-  //   var e = data?['entry'];
-  //   log('Entry Data: $e');
-  //   return e;
-  //   }
-  //   return '';
-  // }
-  void _fetchUserData() {
-    print("=============User DATA=============\n");
-    try {
-      print("Loading data...\n");
-      print("Searching for: $_dateOutput");
-      FirebaseFirestore.instance
-          .collection('Users')
-          .doc(userID)
-          .collection('posts')
-          .doc(_dateOutput)
-          .get()
-          .then((value) {
-        if (value.exists) {
-          print("Data Exists!");
-          setState(() {
-            print("Fetching entry...");
-            entry = value.data()?['entry'];
-            print(entry);
-            textController.text = entry;
-          });
-        } else {
-          print(value.exists);
-          print("Data is unavailable.");
-        }
-        dataCheck = true;
-      });
-    } catch (e) {
-      print(e);
+  Future<String> getEntryTest() async {
+    var getEnt = await collectionRef.doc(_dateOutput);
+    log('$getEnt');
+    var data =getEnt.data();
+    var e = data?['entry'];
+    return e;
+
+  }
+  void updateText() async {
+    if (await checkIfDocExists(_dateOutput)) {
+      textController.text = await getEntryTest();
+      log('$textController');
     }
   }
-
-  // void updateText() async {
-  //   if (await checkIfDocExists(_dateOutput)) {
-  //     textController.text = await getEntryTest();
-  //     log('$textController');
-  //   }
-  // }
 
   @override
   void initState() {
     super.initState();
 
+    updateText();
     // Start listening to changes.
   }
 
@@ -110,21 +78,29 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    updateDate();
-    if (!dataCheck) {
-      _fetchUserData();
-    }
+    _today = DateFormat.yMMMMd().format(_date);
+    _dateOutput = DateFormat("yMMd").format(_date);
     entry = textController.text;
     return _buildContent(context);
   }
 
-  Future post() async {
-    Entry userEntry = Entry(
-        dateID: _dateOutput,
-        dateLong: _today,
-        entry: entry,
-        dateModified: DateTime.now());
+  /// Check If Document Exists
+  Future<bool> checkIfDocExists(String docId) async {
+    try {
+      // Get reference to Firestore collection
+      var collectionRef =
+      FirebaseFirestore.instance.collection('User').doc(globals.user.user?.uid).collection('posts');
 
+      var doc = await collectionRef.doc(docId).get();
+      log('$doc');
+      log('${doc.exists}');
+      return doc.exists;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future post() async {
     final send = FirebaseFirestore.instance
         .collection('Users')
         .doc(globals.user.user?.uid)
@@ -134,12 +110,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     await collectionRef.doc(userEntry.dateID).set(userEntry.toJson());
   }
 
-  // Future<bool> changeValue() async {
-  //   bool checked = false;
-  //   var doc = await checkIfDocExists(_dateOutput);
-  //   checked = doc;
-  //   return checked;
-  // }
+  Future<bool> changeValue() async {
+    bool checked = false;
+    var doc = await checkIfDocExists(_dateOutput);
+    checked = doc;
+    return checked;
+  }
 
   Widget buildPostWriter() {
     return FractionallySizedBox(
@@ -200,20 +176,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
 
     if (picked != null && picked != _date) {
+      print('Date selected: ${_date.toString()}');
+      print(_today);
+      print(_dateOutput);
       setState(() {
         _date = picked;
-        updateDate();
-        dataCheck = false;
       });
     }
-  }
-
-  void updateDate() {
-    _today = DateFormat.yMMMMd().format(_date);
-    _dateOutput = DateFormat("yMMd").format(_date);
-    log('================DATE================\n');
-    log('Date Picked: $_date\nDate Format: $_today\nDate File Output: $_dateOutput\n');
-    log('================DATE================');
   }
 
   Widget _buildContent(BuildContext context) {
@@ -254,15 +223,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                                 ElevatedButton(
                                   onPressed: () => _selectDate(context),
                                   child: Text("$_today"),
-                                )
-                              ],
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                ElevatedButton(
-                                  onPressed: () => _fetchUserData(),
-                                  child: Text("Load"),
                                 )
                               ],
                             ),

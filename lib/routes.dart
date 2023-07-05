@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:journal/get/get_post.dart';
 import 'package:journal/post/create_post.dart';
 import 'login/login_screen.dart';
 
@@ -15,6 +16,8 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case '/post/create':
         return MaterialPageRoute(builder: (_) => const CreatePostScreen());
+      case '/get/entry':
+        return MaterialPageRoute(builder: (_) => const GetFirePost());
       // case '/settings':
       //   return MaterialPageRoute(builder: (_) => const SettingsScreen());
     // case '/bluetooth':
