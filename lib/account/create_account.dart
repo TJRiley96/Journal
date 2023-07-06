@@ -1,26 +1,12 @@
-// File: login_screen.dart
-//
-//
-//
-//
-// Author: T.J. Riley           Date Created: 06/21/2023
-// Copyright: Copyright (c) 2022 Thomas Riley.
-// Maintainer: T.J. Riley
-// Status: Development
-//
-
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hash/hash.dart';
-import 'package:journal/auth/auth_fb.dart';
-import 'package:journal/com/hash_pwd.dart';
-import 'package:journal/globals.dart' as globals;
-import '../color_palette.dart';
-import '../com/dialog_alert.dart';
 
+import '../color_palette.dart';
+import '../com/hash_pwd.dart';
+import '../globals.dart';
 extension EmailValidator on String {
   bool isValidEmail() {
     return RegExp(
@@ -29,71 +15,46 @@ extension EmailValidator on String {
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  /// Login screen for enter main screen.
-  /// Must go through this screen to in order to use app.
-  const LoginScreen({super.key});
+class CreateAccount extends StatefulWidget {
+  const CreateAccount({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<CreateAccount> createState() => _CreateAccountState();
 }
 
-Widget buildForgotPassBtn(BuildContext context) {
-  return Container(
-    alignment: Alignment.centerRight,
-    child: TextButton(
-      // TODO: Add forgot password functionality
-      onPressed: () => Navigator.of(context).pushNamed('/account/forgot'),
-      child: const Text(
-        "Forgot Password?",
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+class _CreateAccountState extends State<CreateAccount> {
+
+  int userPassCheckHash1 = 0;
+  int userPassCheckHash2 = 0;
+  String userPassCheck1 = '';
+  String userPassCheck2 = '';
+  String userEmail = "";
+
+  Future<String?> buildDialog(String message){
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(message,
+                style: TextStyle(color: Colors.red.shade800),),
+              const SizedBox(height: 15),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Close'),
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
-}
-
-Widget buildCreateAccountBtn(BuildContext context) {
-  return Container(
-    alignment: Alignment.centerRight,
-    child: TextButton(
-      // TODO: Add forgot password functionality
-      onPressed: () => Navigator.of(context).pushNamed('/account/create'),
-      child: const Text(
-        "Create Account",
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      ),
-    ),
-  );
-}
-
-Widget buildSkipBtn(BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.symmetric(vertical: 25),
-    width: double.infinity,
-    child: ElevatedButton(
-      style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          padding: const EdgeInsets.all(15),
-          elevation: 5,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-      child: Text(
-        "Skip",
-        style: TextStyle(
-            color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      onPressed: () {
-        Navigator.of(context).pushNamed('/post/create');
-      },
-    ),
-  );
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  bool isRememberMe = false;
-  String userEmail = '';
-  String userPass = '';
-  int userPassHash = 0;
+    );
+  }
 
   Widget buildEmail() {
     return Column(
@@ -126,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: TextField(
             keyboardType: TextInputType.emailAddress,
             onChanged: (value) {
-              userEmail = value.toLowerCase();
+              userEmail = value;
             },
             style: const TextStyle(
               color: Colors.black87,
@@ -146,11 +107,11 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget buildPassword() {
+  Widget buildPassword1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text(
+         const Text(
           "Password",
           style: TextStyle(
             color: Colors.white,
@@ -178,9 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
             obscuringCharacter: '#',
             obscureText: true,
             onChanged: (value) {
-              print(value);
-              print(hashPassword(value));
-              userPass = value;
+              userPassCheck1 = value;
             },
             keyboardType: TextInputType.visiblePassword,
             style: const TextStyle(
@@ -201,37 +160,60 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget buildRememberCheck() {
-    return Container(
-      height: 20,
-      child: Row(
-        children: [
-          Theme(
-            data: ThemeData(unselectedWidgetColor: Colors.white),
-            child: Checkbox(
-              value: isRememberMe,
-              checkColor: Colors.green,
-              activeColor: Colors.white,
-              onChanged: (value) {
-                setState(() {
-                  isRememberMe = value!;
-                });
-              },
-            ),
+  Widget buildPassword2() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          "Retype Password",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
-          const Text(
-            "Remember Me",
-            style: TextStyle(
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Container(
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                )
+              ]),
+          height: 60,
+          child: TextField(
+            obscuringCharacter: '#',
+            obscureText: true,
+            onChanged: (value) {
+              userPassCheck2 = value;
+            },
+            keyboardType: TextInputType.visiblePassword,
+            style: const TextStyle(
+              color: Colors.black87,
             ),
-          )
-        ],
-      ),
+            decoration: InputDecoration(
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.only(top: 14),
+                prefixIcon: Icon(
+                  Icons.password,
+                  color: iconMain,
+                ),
+                hintText: "Password",
+                hintStyle: const TextStyle(color: Colors.black38)),
+          ),
+        )
+      ],
     );
   }
 
-  Widget buildLoginBtn() {
+  Widget buildCreateBtn() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25),
       width: double.infinity,
@@ -243,48 +225,48 @@ class _LoginScreenState extends State<LoginScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15))),
         child: Text(
-          "Login",
+          "Create Account",
           style: TextStyle(
               color: textMain, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         // TODO: Add login functionality
         onPressed: () async {
-          log("Login Pressed\nEmail: $userEmail\nPassword: $userPass");
           try {
+            log("Email: $userEmail\nPassword 1: $userPassCheck1\nPassword 2: $userPassCheck2");
             if(userEmail.isValidEmail()) {
-              final credential = await FirebaseAuth.instance
-                  .signInWithEmailAndPassword(
-                  email: userEmail,
-                  password: userPass.toString()
-              );
-              log("$credential");
-              userCredential = credential;
-              globals.user = credential;
-              log('User Credentials Log - ${globals.user.credential}');
-              log('User user Log - ${globals.user.user}');
-              log('User Additional User Info Log - ${globals.user.additionalUserInfo}');
-              Navigator.of(context).pushNamed('/post/create');
+              if((userPassCheck1 != '') && (userPassCheck2 != '')) {
+                if (userPassCheck1 == userPassCheck2) {
+                  if(userPassCheck1.length >= 6) {
+                    FirebaseAuth.instance.createUserWithEmailAndPassword(
+                        email: userEmail, password: userPassCheck1.toString());
+
+                    log("Account Create");
+                    buildDialog('Account Created');
+                    Navigator.of(context).pushNamed('/');
+                  }else{
+                    buildDialog('Password be 6 characters or longer');
+                  }
+                } else {
+                  buildDialog('Password does not match');;
+                }
+              }else{
+                buildDialog('Password is invalid');
+              }
             }else{
-              buildDialog(context, "Invalid email format");
+              buildDialog('Email is invalid');
             }
 
           } on FirebaseAuthException catch (e) {
-            print(e);
-            print(e.code);
-            print(e.message);
             if (e.code == 'user-not-found') {
-              buildDialog(context, 'No user found for that email.');;
+              log('No user found for that email.');
             } else if (e.code == 'wrong-password') {
-              buildDialog(context, 'Wrong password provided for that user.');
-            }else if (e.code == 'missing-password'){
-              buildDialog(context, 'Password must be provided.');
+              log('Wrong password provided for that user.');
             }
           }
         },
       ),
     );
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -326,26 +308,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    buildPassword(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            buildCreateAccountBtn(context),
-                          ],
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            buildForgotPassBtn(context),
-                          ],
-                        ),
-                      ],
+                    buildPassword1(),
+                    const SizedBox(
+                      height: 20,
                     ),
-                    buildRememberCheck(),
-                    buildLoginBtn(),
+                    buildPassword2(),
+                    buildCreateBtn(),
                   ],
                 ),
               ),

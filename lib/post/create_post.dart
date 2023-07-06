@@ -38,10 +38,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   var _today;
   String _dateOutput = '';
   final userID = FirebaseAuth.instance.currentUser?.uid;
-  final collectionRef = FirebaseFirestore.instance
-      .collection('User')
-      .doc(globals.user.user?.uid)
-      .collection('posts');
   final textController = TextEditingController();
 
   //
@@ -79,7 +75,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           });
         } else {
           print(value.exists);
-          print("Data is unavailable.");
+          print("No Entries!");
+          entry = '';
+          textController.text = entry;
         }
         dataCheck = true;
       });
@@ -119,6 +117,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future post() async {
+    entry = textController.text;
     Entry userEntry = Entry(
         dateID: _dateOutput,
         dateLong: _today,
@@ -127,11 +126,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     final send = FirebaseFirestore.instance
         .collection('Users')
-        .doc(globals.user.user?.uid)
+        .doc(userID)
         .collection('posts')
         .doc(userEntry.dateID);
 
-    await collectionRef.doc(userEntry.dateID).set(userEntry.toJson());
+    await send.set(userEntry.toJson());
   }
 
   // Future<bool> changeValue() async {
@@ -210,7 +209,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   void updateDate() {
     _today = DateFormat.yMMMMd().format(_date);
-    _dateOutput = DateFormat("yMMd").format(_date);
+    _dateOutput = DateFormat("yMMdd").format(_date);
     log('================DATE================\n');
     log('Date Picked: $_date\nDate Format: $_today\nDate File Output: $_dateOutput\n');
     log('================DATE================');
