@@ -178,8 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
             obscuringCharacter: '#',
             obscureText: true,
             onChanged: (value) {
-              print(value);
-              print(hashPassword(value));
               userPass = value;
             },
             keyboardType: TextInputType.visiblePassword,
@@ -249,7 +247,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         // TODO: Add login functionality
         onPressed: () async {
-          log("Login Pressed\nEmail: $userEmail\nPassword: $userPass");
           try {
             if(userEmail.isValidEmail()) {
               final credential = await FirebaseAuth.instance
@@ -257,12 +254,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   email: userEmail,
                   password: userPass.toString()
               );
-              log("$credential");
-              userCredential = credential;
-              globals.user = credential;
-              log('User Credentials Log - ${globals.user.credential}');
-              log('User user Log - ${globals.user.user}');
-              log('User Additional User Info Log - ${globals.user.additionalUserInfo}');
               Navigator.of(context).pushNamed('/post/create');
             }else{
               buildDialog(context, "Invalid email format");
@@ -273,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
             print(e.code);
             print(e.message);
             if (e.code == 'user-not-found') {
-              buildDialog(context, 'No user found for that email.');;
+              buildDialog(context, 'No user found for that email.');
             } else if (e.code == 'wrong-password') {
               buildDialog(context, 'Wrong password provided for that user.');
             }else if (e.code == 'missing-password'){
