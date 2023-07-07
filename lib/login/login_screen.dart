@@ -247,7 +247,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         // TODO: Add login functionality
         onPressed: () async {
-          log("Login Pressed\nEmail: $userEmail\nPassword: $userPass");
           try {
             if(userEmail.isValidEmail()) {
               final credential = await FirebaseAuth.instance
