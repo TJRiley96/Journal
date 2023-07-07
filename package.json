@@ -1,0 +1,30 @@
+{
+  "name": "journal",
+  "version": "1.0.0",
+  "description": "WebApp for journaling",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TJRiley96/Journal.git"
+  },
+  "keywords": [
+    "journal"
+  ],
+  "author": "TJ Riley",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TJRiley96/Journal/issues"
+  },
+  "homepage": "https://github.com/TJRiley96/Journal#readme",
+  "dependencies": {
+    "package-lock.json": "^1.0.0"
+  }
+}

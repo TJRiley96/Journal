@@ -245,6 +245,7 @@ class _CreateAccountState extends State<CreateAccount> {
                     Navigator.of(context).pushNamed('/');
                   }else{
                     buildDialog('Password be 6 characters or longer');
+
                   }
                 } else {
                   buildDialog('Password does not match');;
