@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/TJRiley96/Journal/issues"
   },
-  "homepage": "https://github.com/TJRiley96/Journal#readme"
+  "homepage": "https://github.com/TJRiley96/Journal#readme",
+  "dependencies": {
+    "package-lock.json": "^1.0.0"
+  }
 }
