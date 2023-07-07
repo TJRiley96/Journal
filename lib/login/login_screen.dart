@@ -178,8 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
             obscuringCharacter: '#',
             obscureText: true,
             onChanged: (value) {
-              print(value);
-              print(hashPassword(value));
               userPass = value;
             },
             keyboardType: TextInputType.visiblePassword,
@@ -257,12 +255,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   email: userEmail,
                   password: userPass.toString()
               );
-              log("$credential");
-              userCredential = credential;
-              globals.user = credential;
-              log('User Credentials Log - ${globals.user.credential}');
-              log('User user Log - ${globals.user.user}');
-              log('User Additional User Info Log - ${globals.user.additionalUserInfo}');
               Navigator.of(context).pushNamed('/post/create');
             }else{
               buildDialog(context, "Invalid email format");
