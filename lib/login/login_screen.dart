@@ -264,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
             print(e.code);
             print(e.message);
             if (e.code == 'user-not-found') {
-              buildDialog(context, 'No user found for that email.');;
+              buildDialog(context, 'No user found for that email.');
             } else if (e.code == 'wrong-password') {
               buildDialog(context, 'Wrong password provided for that user.');
             }else if (e.code == 'missing-password'){
