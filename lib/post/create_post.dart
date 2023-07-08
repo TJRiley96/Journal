@@ -257,15 +257,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                               ],
                             ),
                             Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                ElevatedButton(
-                                  onPressed: () => _fetchUserData(),
-                                  child: Text("Load"),
-                                )
-                              ],
-                            ),
-                            Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: <Widget>[
                                   ElevatedButton(
